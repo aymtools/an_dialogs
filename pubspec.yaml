@@ -1,0 +1,31 @@
+name: an_dialogs
+description: "An extension package for dialogs related to anlifecycle and cancellabe"
+version: 1.0.0
+homepage: https://github.com/aymtools/an_remember/
+issue_tracker: https://github.com/aymtools/an_remember/issues
+
+topics:
+  - loading
+  - dialog
+  - dialog-manager
+  - dialogs
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cancellable: ^2.3.1
+  anlifecycle: ^3.5.0
+  weak_collections: ^1.5.0
+  an_lifecycle_cancellable: ^2.4.3
+  an_viewmodel: ^3.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+
+flutter:
