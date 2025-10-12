@@ -15,6 +15,7 @@ typedef LoadingDialogContentBuilder = Widget Function(
 typedef OnBackPressedInterceptBuilder = Widget Function(
     {required Widget child});
 
+/// loading 配置
 class LoadingConfig {
   LoadingConfig._();
 
@@ -29,6 +30,7 @@ class LoadingConfig {
       defaultLoadingDialogContentBuilder;
 }
 
+/// 默认的loading dialog content
 Widget defaultLoadingDialogContentBuilder(
   BuildContext context,
   String message,
@@ -46,6 +48,7 @@ Widget defaultLoadingDialogContentBuilder(
   );
 }
 
+/// 默认的loading dialog
 void defaultLoadingDialogBuilder(
   NavigatorState navigator,
   CancellableQueue<String> messageQueue,
@@ -90,11 +93,11 @@ extension on Lifecycle {
 }
 
 extension LifecycleLoadingExt on ILifecycle {
-  void showLoading({String? message, Cancellable? cancellable}) {
+  /// 展示 loading
+  void showLoading({String message = '', Cancellable? cancellable}) {
     if (currentLifecycleState < LifecycleState.initialized) return;
     cancellable = makeLiveCancellable(other: cancellable);
     if (cancellable.isUnavailable) return;
-    message ??= '';
     final routeState = findLifecycleOwner<LifecycleRouteOwnerState>();
     assert(routeState != null, 'LifecycleRouteOwnerState not found');
 
@@ -116,9 +119,10 @@ extension LifecycleLoadingExt on ILifecycle {
 }
 
 extension FutureLoadingExt<T> on Future<T> {
+  /// 当 Future 还未完成时，自动展示 loading
   Future<T> withLoading(
     ILifecycle lifecycle, {
-    String? message,
+    String message = '',
     Cancellable? cancellable,
   }) {
     if (lifecycle.currentLifecycleState < LifecycleState.initialized) {
@@ -134,9 +138,10 @@ extension FutureLoadingExt<T> on Future<T> {
 }
 
 extension StreamLoadingExt<T> on Stream<T> {
+  /// 当Stream还未发射数据时，自动展示loading
   Stream<T> withLoading(
     ILifecycle lifecycle, {
-    String? message,
+    String message = '',
     Cancellable? cancellable,
     bool onErrorCallCancel = true,
   }) {
