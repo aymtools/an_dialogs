@@ -32,7 +32,7 @@ class CancellableQueue<T> with ChangeNotifier {
     notifyListeners();
   }
 
-  void _check(_) {
+  void _check(dynamic _) {
     _queue.removeWhere((e) => e.cancellable.isUnavailable);
     if (_queue.isEmpty) {
       _manager.cancel();
