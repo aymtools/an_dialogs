@@ -76,3 +76,6 @@ class CancellableQueue<T> with ChangeNotifier {
   /// 第一个值
   T get firstValue => _queue.first.value;
 }
+
+typedef OnBackPressedInterceptBuilder = Widget Function(
+    {required Widget child});

@@ -1,8 +1,8 @@
 name: an_dialogs
 description: "An extension package for dialogs related to anlifecycle and cancellabe"
-version: 1.0.0
-homepage: https://github.com/aymtools/an_remember/
-issue_tracker: https://github.com/aymtools/an_remember/issues
+version: 1.1.0
+homepage: https://github.com/aymtools/an_dialogs/
+issue_tracker: https://github.com/aymtools/an_dialogs/issues
 
 topics:
   - loading

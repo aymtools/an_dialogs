@@ -6,14 +6,12 @@ import 'package:flutter/material.dart';
 
 final _loadingKey = Object();
 
-typedef LoadingDialogBuilder = void Function(
+typedef LoadingDialogDisplayer = void Function(
   NavigatorState navigator,
   CancellableQueue<String> messageQueue,
 );
 typedef LoadingDialogContentBuilder = Widget Function(
     BuildContext context, String message);
-typedef OnBackPressedInterceptBuilder = Widget Function(
-    {required Widget child});
 
 /// loading 配置
 class LoadingConfig {
@@ -23,9 +21,14 @@ class LoadingConfig {
 
   static LoadingConfig get instance => _instance;
 
-  LoadingDialogBuilder loadingDialogBuilder = defaultLoadingDialogBuilder;
+  /// 定义如何展示
+  LoadingDialogDisplayer loadingDialogDisplayer = defaultLoadingDialogDisplayer;
+
+  /// 自己控制如何兼容拦截返回键
   OnBackPressedInterceptBuilder loadingInterceptOnBackPressed =
       ({required Widget child}) => child;
+
+  /// 定义如何构建loading的布局
   LoadingDialogContentBuilder loadingDialogContentBuilder =
       defaultLoadingDialogContentBuilder;
 }
@@ -49,7 +52,7 @@ Widget defaultLoadingDialogContentBuilder(
 }
 
 /// 默认的loading dialog
-void defaultLoadingDialogBuilder(
+void defaultLoadingDialogDisplayer(
   NavigatorState navigator,
   CancellableQueue<String> messageQueue,
 ) {
@@ -82,11 +85,18 @@ extension on Lifecycle {
   void _showLoadingDialog(CancellableQueue<String> queue) {
     launchWhenLifecycleStateResumed(
       cancellable: queue.managerCancellable,
-      runWithDelayed: true,
-      block: (_) {
-        final context = (owner as State).context;
-        final navigator = Navigator.of(context);
-        LoadingConfig.instance.loadingDialogBuilder(navigator, queue);
+      block: (c) async {
+        final state = (owner as State);
+        late BuildContext context;
+        await Future.delayed(Duration.zero);
+        if (state.mounted && (context = state.context).mounted) {
+          if (c.isAvailable) {
+            LoadingConfig.instance
+                .loadingDialogDisplayer(Navigator.of(context), queue);
+          } else if (queue.isAvailable) {
+            _showLoadingDialog(queue);
+          }
+        }
       },
     );
   }
@@ -94,7 +104,8 @@ extension on Lifecycle {
 
 extension LifecycleLoadingExt on ILifecycle {
   /// 展示 loading
-  void showLoading({String message = '', Cancellable? cancellable}) {
+  /// * [cancellable] 控制loading的结束
+  void showLoading({String message = '', required Cancellable cancellable}) {
     if (currentLifecycleState < LifecycleState.initialized) return;
     cancellable = makeLiveCancellable(other: cancellable);
     if (cancellable.isUnavailable) return;
