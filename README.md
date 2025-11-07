@@ -1,9 +1,124 @@
-An extension package for dialogs related to anlifecycle and cancellabe
-
-## Features
-
 Used to manage route-based dialogs and loading states, controlling when they are pushed and
 dismissed.
+
+## Usage
+
+#### 1.1 Prepare the lifecycle environment.
+
+```dart
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Use LifecycleApp to wrap the default App
+    return LifecycleApp(
+      child: MaterialApp(
+        title: 'Dialog Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        navigatorObservers: [
+          //Use LifecycleNavigatorObserver.hookMode() to register routing event changes
+          LifecycleNavigatorObserver.hookMode(),
+        ],
+        home: const HomeRememberDemo(title: 'Dialog Home Page'),
+      ),
+    );
+  }
+}
+```
+
+The current usage of PageView and TabBarViewPageView should be replaced with LifecyclePageView and
+LifecycleTabBarView. Alternatively, you can wrap the items with LifecyclePageViewItem. You can refer
+to [anlifecycle](https://pub.dev/packages/anlifecycle) for guidance.
+
+#### 1.2 Configure your UI visual style (optional, the default is to use the MD style).
+
+```dart
+void initDialogs() {
+  LoadingConfig.instance.XXXX;
+  DialogsConfig.instance.XXX;
+}
+
+```
+
+#### 1.3 Use loading to automatically manage appearance and disappearance.
+
+```dart
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final lifecycle = context.lifecycle;
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            TextButton(
+              onPressed: () {
+                lifecycle.showAlert(
+                    titleLabel: 'Title', message: 'Alert message');
+              },
+              child: Text('showAlert'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final select = await lifecycle.showConfirm(
+                    titleLabel: 'Confirm', message: 'Confirm message');
+                print('select:$select');
+              },
+              child: Text('showConfirm'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final loading = lifecycle.makeLiveCancellable();
+                lifecycle.showLoading(cancellable: loading);
+                try {
+                  await _loading1Future();
+                } finally {
+                  loading.cancel();
+                }
+              },
+              child: Text('showLoading 3s'),
+            ),
+            TextButton(
+              onPressed: () {
+                final loading1 = lifecycle.makeLiveCancellable();
+                final loading2 = lifecycle.makeLiveCancellable();
+
+                lifecycle.showLoading(cancellable: loading1);
+                lifecycle.showLoading(cancellable: loading2);
+
+                _loading1Future().whenComplete(() => loading1.cancel());
+                _loading2Future().whenComplete(() => loading2.cancel());
+              },
+              child: Text('showLoading 3s & 5s '),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _loading1Future() async {
+  await Future.delayed(const Duration(seconds: 3));
+}
+
+Future<void> _loading2Future() async {
+  await Future.delayed(const Duration(seconds: 5));
+}
+
+extension on BuildContext {
+  Lifecycle get lifecycle => Lifecycle.of(this);
+}
+
+```
 
 ## Additional information
 

@@ -1,8 +1,9 @@
 name: an_dialogs
-description: "An extension package for dialogs related to anlifecycle and cancellabe"
+description: "Used to manage route-based dialogs and loading states, controlling when they are pushed and
+dismissed."
 version: 1.1.0
-homepage: https://github.com/aymtools/an_dialogs/
-issue_tracker: https://github.com/aymtools/an_dialogs/issues
+homepage: https://github.com/aymtools/an_dialog/
+issue_tracker: https://github.com/aymtools/an_dialog/issues
 
 topics:
   - loading
@@ -21,7 +22,6 @@ dependencies:
   anlifecycle: ^3.5.1
   weak_collections: ^1.5.0
   an_lifecycle_cancellable: ^2.5.1
-  an_viewmodel: ^3.5.1
 
 dev_dependencies:
   flutter_test:

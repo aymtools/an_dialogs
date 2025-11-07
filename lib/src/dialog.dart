@@ -6,16 +6,8 @@ import 'package:anlifecycle/anlifecycle.dart';
 import 'package:cancellable/cancellable.dart';
 import 'package:flutter/material.dart';
 
-typedef DialogDisplayer = void Function(NavigatorState navigator,
-    Cancellable cancellable, RawDialogRoute<void> dialogRoute);
-typedef DialogRouteBuilder = RawDialogRoute<void> Function(
-    BuildContext context, Widget dialogContent);
-typedef DialogContentBuilder = Widget Function(
-    {required BuildContext context,
-    Widget? title,
-    required Widget content,
-    Widget? confirm,
-    Widget? cancel});
+typedef DialogContentBuilder = Widget Function(BuildContext context,
+    Widget? title, Widget content, Widget? confirm, Widget? cancel);
 typedef DialogLabelActionBuilder = Widget Function(
     BuildContext context, String label, VoidCallback onPressed);
 
@@ -29,7 +21,7 @@ class DialogsConfig {
 
   /// 定义如何拦截系统返回键
   OnBackPressedInterceptBuilder onBackPressedIntercept =
-      ({required Widget child}) => child;
+      (Widget child) => child;
 
   /// 定义如何使用路由管理dialog
   DialogDisplayer dialogDisplayer = (navigator, cancellable, dialogRoute) =>
@@ -63,7 +55,7 @@ class DialogsConfig {
 
   /// 定义dialog内容如何布局
   DialogContentBuilder dialogContentBuilder =
-      ({required context, title, required content, confirm, cancel}) {
+      (context, title, content, confirm, cancel) {
     return AlertDialog(
       title: title,
       content: content,
@@ -220,10 +212,10 @@ extension LifecycleDialogsExt on ILifecycle {
         runAtLeastState: runAtLeastState,
         dialogRouteBuilder: (context) {
           Widget dialog = configs.dialogContentBuilder(
-            context: context,
-            title: title,
-            content: content!,
-            confirm: _actionWidget(
+            context,
+            title,
+            content!,
+            _actionWidget(
               context: context,
               actionBuilder: okBuilder,
               action: ok,
@@ -232,8 +224,9 @@ extension LifecycleDialogsExt on ILifecycle {
               labelActionBuilder: configs.alertDialogLabelActionBuilder,
               onPressed: checkable.cancel,
             ),
+            null,
           );
-          dialog = configs.onBackPressedIntercept(child: dialog);
+          dialog = configs.onBackPressedIntercept(dialog);
           return configs.alertDialogRouteBuilder(context, dialog);
         });
     return checkable.whenCancel;
@@ -242,7 +235,7 @@ extension LifecycleDialogsExt on ILifecycle {
   /// 显示一个confirm
   Future<bool> showConfirm(
       {Widget? title,
-      String? titleStr,
+      String? titleLabel,
       Widget? content,
       String? message,
       Widget Function(BuildContext context, void Function() onTap)? okBuilder,
@@ -266,9 +259,9 @@ extension LifecycleDialogsExt on ILifecycle {
 
     final configs = DialogsConfig.instance;
 
-    if (title == null && titleStr != null) {
+    if (title == null && titleLabel != null) {
       title = Text(
-        titleStr,
+        titleLabel,
         textAlign: configs.dialogTitleTextAlign,
       );
     }
@@ -294,10 +287,10 @@ extension LifecycleDialogsExt on ILifecycle {
         runAtLeastState: runAtLeastState,
         dialogRouteBuilder: (context) {
           Widget dialog = configs.dialogContentBuilder(
-            context: context,
-            title: title,
-            content: content!,
-            confirm: _actionWidget(
+            context,
+            title,
+            content!,
+            _actionWidget(
                 context: context,
                 actionBuilder: okBuilder,
                 action: ok,
@@ -306,7 +299,7 @@ extension LifecycleDialogsExt on ILifecycle {
                 labelActionBuilder:
                     configs.confirmDialogConfirmLabelActionBuilder,
                 onPressed: onOkPressed),
-            cancel: _actionWidget(
+            _actionWidget(
                 context: context,
                 actionBuilder: cancelBuilder,
                 action: cancel,
@@ -316,7 +309,7 @@ extension LifecycleDialogsExt on ILifecycle {
                     configs.confirmDialogCancelLabelActionBuilder,
                 onPressed: onCancelPressed),
           );
-          dialog = configs.onBackPressedIntercept(child: dialog);
+          dialog = configs.onBackPressedIntercept(dialog);
           return configs.confirmDialogRouteBuilder(context, dialog);
         });
     return checkable.whenCancel.then((_) => result);

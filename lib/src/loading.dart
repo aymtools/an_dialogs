@@ -6,10 +6,6 @@ import 'package:flutter/material.dart';
 
 final _loadingKey = Object();
 
-typedef LoadingDialogDisplayer = void Function(
-  NavigatorState navigator,
-  CancellableQueue<String> messageQueue,
-);
 typedef LoadingDialogContentBuilder = Widget Function(
     BuildContext context, String message);
 
@@ -22,11 +18,22 @@ class LoadingConfig {
   static LoadingConfig get instance => _instance;
 
   /// 定义如何展示
-  LoadingDialogDisplayer loadingDialogDisplayer = defaultLoadingDialogDisplayer;
+  DialogDisplayer loadingDialogDisplayer =
+      (navigator, cancellable, dialogRoute) =>
+          navigator.pushCancellableRoute(dialogRoute, cancellable);
 
   /// 自己控制如何兼容拦截返回键
-  OnBackPressedInterceptBuilder loadingInterceptOnBackPressed =
-      ({required Widget child}) => child;
+  OnBackPressedInterceptBuilder onBackPressedIntercept =
+      (Widget child) => child;
+
+  /// 定义 如何构建loading的route
+  DialogRouteBuilder loadingDialogRouteBuilder = (context, dialogContent) {
+    return DialogRoute<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => dialogContent,
+    );
+  };
 
   /// 定义如何构建loading的布局
   LoadingDialogContentBuilder loadingDialogContentBuilder =
@@ -50,34 +57,59 @@ Widget defaultLoadingDialogContentBuilder(
     ],
   );
 }
+//
+// /// 默认的loading dialog
+// void defaultLoadingDialogDisplayer(
+//   NavigatorState navigator,
+//   CancellableQueue<String> messageQueue,
+// ) {
+//   navigator.showDialog(
+//     cancellable: messageQueue.managerCancellable,
+//     barrierDismissible: false,
+//     builder: (context) {
+//       return AlertDialog(
+//         content: LoadingConfig.instance.loadingOnBackPressedIntercept(
+//           AnimatedBuilder(
+//             animation: messageQueue,
+//             builder: (context, child) {
+//               final message =
+//                   messageQueue.isAvailable && messageQueue.isNotEmpty
+//                       ? messageQueue.lastValue
+//                       : '';
+//               return LoadingConfig.instance.loadingDialogContentBuilder(
+//                 context,
+//                 message,
+//               );
+//             },
+//           ),
+//         ),
+//       );
+//     },
+//   );
+// }
 
-/// 默认的loading dialog
-void defaultLoadingDialogDisplayer(
-  NavigatorState navigator,
-  CancellableQueue<String> messageQueue,
-) {
-  navigator.showDialog(
-    cancellable: messageQueue.managerCancellable,
-    barrierDismissible: false,
-    builder: (context) {
-      return AlertDialog(
-        content: LoadingConfig.instance.loadingInterceptOnBackPressed(
-          child: AnimatedBuilder(
-            animation: messageQueue,
-            builder: (context, child) {
-              final message =
-                  messageQueue.isAvailable && messageQueue.isNotEmpty
-                      ? messageQueue.lastValue
-                      : '';
-              return LoadingConfig.instance.loadingDialogContentBuilder(
-                context,
-                message,
-              );
-            },
-          ),
-        ),
-      );
-    },
+void _showLoading(NavigatorState navigator, CancellableQueue<String> queue) {
+  final loading = LoadingConfig.instance;
+  // 构建widget
+  Widget content = AnimatedBuilder(
+    animation: queue,
+    builder: (context, child) => loading.loadingDialogContentBuilder(
+        context, queue.isAvailable && queue.isNotEmpty ? queue.lastValue : ''),
+    child: loading.loadingDialogContentBuilder(
+      navigator.context,
+      queue.lastValue,
+    ),
+  );
+  // 拦截返回
+  content = loading.onBackPressedIntercept(content);
+  // 进行展示
+  loading.loadingDialogDisplayer(
+    navigator,
+    queue.managerCancellable,
+    loading.loadingDialogRouteBuilder(
+      navigator.context,
+      content,
+    ),
   );
 }
 
@@ -91,8 +123,7 @@ extension on Lifecycle {
         await Future.delayed(Duration.zero);
         if (state.mounted && (context = state.context).mounted) {
           if (c.isAvailable) {
-            LoadingConfig.instance
-                .loadingDialogDisplayer(Navigator.of(context), queue);
+            _showLoading(Navigator.of(context), queue);
           } else if (queue.isAvailable) {
             _showLoadingDialog(queue);
           }

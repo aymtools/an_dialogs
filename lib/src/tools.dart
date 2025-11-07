@@ -77,5 +77,10 @@ class CancellableQueue<T> with ChangeNotifier {
   T get firstValue => _queue.first.value;
 }
 
-typedef OnBackPressedInterceptBuilder = Widget Function(
-    {required Widget child});
+typedef OnBackPressedInterceptBuilder = Widget Function(Widget child);
+
+typedef DialogDisplayer = void Function(NavigatorState navigator,
+    Cancellable cancellable, RawDialogRoute<void> dialogRoute);
+
+typedef DialogRouteBuilder = RawDialogRoute<void> Function(
+    BuildContext context, Widget dialogContent);
