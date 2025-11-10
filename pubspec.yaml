@@ -1,7 +1,7 @@
 name: an_dialogs
 description: "Used to manage route-based dialogs and loading states, controlling when they are pushed and
 dismissed."
-version: 1.1.0
+version: 1.2.0
 homepage: https://github.com/aymtools/an_dialog/
 issue_tracker: https://github.com/aymtools/an_dialog/issues
 

@@ -1,3 +1,7 @@
+## 1.2.0
+
+* NavigatorState adds extended alert and confirm functions.
+
 ## 1.1.0
 
 * Added alert and confirm dialogs.
