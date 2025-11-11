@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:an_dialogs/src/dialog.dart';
+import 'package:an_dialogs/an_dialogs.dart';
+import 'package:an_dialogs/src/tools/tools.dart';
 import 'package:cancellable/cancellable.dart';
 import 'package:flutter/widgets.dart';
 
@@ -43,7 +44,7 @@ extension NavigatorDialogsExt on NavigatorState {
       context,
       title,
       content,
-      _actionWidget(
+      actionWidget(
         context: context,
         actionBuilder: okBuilder,
         action: ok,
@@ -56,7 +57,7 @@ extension NavigatorDialogsExt on NavigatorState {
     );
     dialog = configs.onBackPressedIntercept(dialog);
     final route = configs.alertDialogRouteBuilder(context, dialog);
-    configs.dialogDisplayer(this, checkable, route);
+    safeShowDialog(configs.dialogDisplayer, this, checkable, route);
     return checkable.whenCancel;
   }
 
@@ -109,7 +110,7 @@ extension NavigatorDialogsExt on NavigatorState {
       context,
       title,
       content,
-      _actionWidget(
+      actionWidget(
           context: context,
           actionBuilder: okBuilder,
           action: ok,
@@ -117,7 +118,7 @@ extension NavigatorDialogsExt on NavigatorState {
           labelBuilder: configs.confirmDialogConfirmActionDefaultLabel,
           labelActionBuilder: configs.confirmDialogConfirmLabelActionBuilder,
           onPressed: onOkPressed),
-      _actionWidget(
+      actionWidget(
           context: context,
           actionBuilder: cancelBuilder,
           action: cancel,
@@ -128,32 +129,7 @@ extension NavigatorDialogsExt on NavigatorState {
     );
     dialog = configs.onBackPressedIntercept(dialog);
     final route = configs.confirmDialogRouteBuilder(context, dialog);
-    configs.dialogDisplayer(this, checkable, route);
+    safeShowDialog(configs.dialogDisplayer, this, checkable, route);
     return checkable.whenCancel.then((_) => result);
-  }
-}
-
-Widget _actionWidget(
-    {Widget Function(BuildContext, VoidCallback)? actionBuilder,
-    Widget? action,
-    String? label,
-    required String Function(BuildContext) labelBuilder,
-    DialogLabelActionBuilder? labelActionBuilder,
-    required BuildContext context,
-    required VoidCallback onPressed}) {
-  if (actionBuilder != null) {
-    return actionBuilder(context, onPressed);
-  } else if (action != null) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: action,
-    );
-  } else {
-    label ??= labelBuilder(context);
-    if (labelActionBuilder != null) {
-      return labelActionBuilder(context, label, onPressed);
-    }
-    return DialogsConfig.instance
-        .dialogLabelActionBuilder(context, label, onPressed);
   }
 }

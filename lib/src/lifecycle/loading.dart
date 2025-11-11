@@ -1,36 +1,11 @@
-import 'package:an_dialogs/src/loading.dart';
 import 'package:an_dialogs/src/tools.dart';
+import 'package:an_dialogs/src/tools/tools.dart';
 import 'package:an_lifecycle_cancellable/an_lifecycle_cancellable.dart';
 import 'package:anlifecycle/anlifecycle.dart';
 import 'package:cancellable/cancellable.dart';
 import 'package:flutter/material.dart';
 
 final _loadingKey = Object();
-
-void _showLoading(NavigatorState navigator, CancellableQueue<String> queue) {
-  final loading = LoadingConfig.instance;
-  // 构建widget
-  Widget content = AnimatedBuilder(
-    animation: queue,
-    builder: (context, child) => loading.loadingDialogContentBuilder(
-        context, queue.isAvailable && queue.isNotEmpty ? queue.lastValue : ''),
-    child: loading.loadingDialogContentBuilder(
-      navigator.context,
-      queue.lastValue,
-    ),
-  );
-  // 拦截返回
-  content = loading.onBackPressedIntercept(content);
-  // 进行展示
-  loading.loadingDialogDisplayer(
-    navigator,
-    queue.managerCancellable,
-    loading.loadingDialogRouteBuilder(
-      navigator.context,
-      content,
-    ),
-  );
-}
 
 extension on Lifecycle {
   void _showLoadingDialog(CancellableQueue<String> queue) {
@@ -42,7 +17,7 @@ extension on Lifecycle {
         await Future.delayed(Duration.zero);
         if (state.mounted && (context = state.context).mounted) {
           if (c.isAvailable) {
-            _showLoading(Navigator.of(context), queue);
+            showDialogLoading(Navigator.of(context), queue);
           } else if (queue.isAvailable) {
             _showLoadingDialog(queue);
           }

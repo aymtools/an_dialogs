@@ -41,16 +41,29 @@ Widget defaultLoadingDialogContentBuilder(
   BuildContext context,
   String message,
 ) {
+  Widget child;
   if (message.isEmpty) {
-    return const Center(child: CircularProgressIndicator());
+    child = SizedBox(
+      width: 60,
+      height: 60,
+      child: Center(child: const CircularProgressIndicator()),
+    );
+  } else {
+    child = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const CircularProgressIndicator(),
+        const SizedBox(height: 16),
+        Text(message),
+      ],
+    );
   }
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      const CircularProgressIndicator(),
-      const SizedBox(height: 16),
-      Text(message),
-    ],
+  return Dialog(
+    insetPadding: EdgeInsets.all(100),
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: child,
+    ),
   );
 }
 //

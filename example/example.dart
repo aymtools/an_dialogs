@@ -77,15 +77,25 @@ class HomePage extends StatelessWidget {
               child: Text('showLoading 3s'),
             ),
             TextButton(
+              onPressed: () async {
+                final loading = lifecycle.makeLiveCancellable();
+                lifecycle.showLoading(cancellable: loading, message: 'loading');
+                try {
+                  await _loading1Future();
+                } finally {
+                  loading.cancel();
+                }
+              },
+              child: Text('showMessageLoading 3s'),
+            ),
+            TextButton(
               onPressed: () {
-                final loading1 = lifecycle.makeLiveCancellable();
-                final loading2 = lifecycle.makeLiveCancellable();
-
-                lifecycle.showLoading(cancellable: loading1);
-                lifecycle.showLoading(cancellable: loading2);
-
-                _loading1Future().whenComplete(() => loading1.cancel());
-                _loading2Future().whenComplete(() => loading2.cancel());
+                _loading1Future()
+                    .withLoading(lifecycle)
+                    .then((_) => print('future 1 end'));
+                _loading2Future()
+                    .withLoading(lifecycle)
+                    .then((_) => print('future 2 end'));
               },
               child: Text('showLoading 3s & 5s '),
             ),

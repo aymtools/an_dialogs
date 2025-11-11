@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:an_dialogs/src/dialog.dart';
+import 'package:an_dialogs/src/tools/tools.dart';
 import 'package:an_lifecycle_cancellable/an_lifecycle_cancellable.dart';
 import 'package:anlifecycle/anlifecycle.dart';
 import 'package:cancellable/cancellable.dart';
@@ -36,8 +37,8 @@ extension LifecycleDialogsExt on ILifecycle {
           /// 如果发现状态已经错过了 则等待下一次的生命周期状态变化再显示
           if (c.isAvailable) {
             final nav = Navigator.of(context);
-            DialogsConfig.instance
-                .dialogDisplayer(nav, checkable, dialogRouteBuilder(context));
+            safeShowDialog(DialogsConfig.instance.dialogDisplayer, nav,
+                checkable, dialogRouteBuilder(context));
           } else if (checkable.isAvailable) {
             showDialog(
                 cancellable: checkable,
@@ -94,7 +95,7 @@ extension LifecycleDialogsExt on ILifecycle {
             context,
             title,
             content!,
-            _actionWidget(
+            actionWidget(
               context: context,
               actionBuilder: okBuilder,
               action: ok,
@@ -169,7 +170,7 @@ extension LifecycleDialogsExt on ILifecycle {
             context,
             title,
             content!,
-            _actionWidget(
+            actionWidget(
                 context: context,
                 actionBuilder: okBuilder,
                 action: ok,
@@ -178,7 +179,7 @@ extension LifecycleDialogsExt on ILifecycle {
                 labelActionBuilder:
                     configs.confirmDialogConfirmLabelActionBuilder,
                 onPressed: onOkPressed),
-            _actionWidget(
+            actionWidget(
                 context: context,
                 actionBuilder: cancelBuilder,
                 action: cancel,
@@ -192,30 +193,5 @@ extension LifecycleDialogsExt on ILifecycle {
           return configs.confirmDialogRouteBuilder(context, dialog);
         });
     return checkable.whenCancel.then((_) => result);
-  }
-}
-
-Widget _actionWidget(
-    {Widget Function(BuildContext, VoidCallback)? actionBuilder,
-    Widget? action,
-    String? label,
-    required String Function(BuildContext) labelBuilder,
-    DialogLabelActionBuilder? labelActionBuilder,
-    required BuildContext context,
-    required VoidCallback onPressed}) {
-  if (actionBuilder != null) {
-    return actionBuilder(context, onPressed);
-  } else if (action != null) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: action,
-    );
-  } else {
-    label ??= labelBuilder(context);
-    if (labelActionBuilder != null) {
-      return labelActionBuilder(context, label, onPressed);
-    }
-    return DialogsConfig.instance
-        .dialogLabelActionBuilder(context, label, onPressed);
   }
 }
