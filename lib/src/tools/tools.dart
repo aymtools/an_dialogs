@@ -21,17 +21,13 @@ void safeShowDialog(DialogDisplayer dialogDisplayer, NavigatorState navigator,
 }
 
 void showDialogLoading(
-    NavigatorState navigator, CancellableQueue<String> queue) {
+    NavigatorState navigator, CancellableQueue<LoadingMessageBuilder?> queue) {
   final loading = LoadingConfig.instance;
   // 构建widget
   Widget content = AnimatedBuilder(
     animation: queue,
-    builder: (context, child) => loading.loadingDialogContentBuilder(
-        context, queue.isAvailable && queue.isNotEmpty ? queue.lastValue : ''),
-    child: loading.loadingDialogContentBuilder(
-      navigator.context,
-      queue.lastValue,
-    ),
+    builder: (context, child) => loading.loadingDialogContentBuilder(context,
+        queue.isAvailable && queue.isNotEmpty ? queue.lastValue : null),
   );
   // 拦截返回
   content = loading.onBackPressedIntercept(content);
@@ -72,3 +68,8 @@ Widget actionWidget(
         .dialogLabelActionBuilder(context, label, onPressed);
   }
 }
+
+LoadingMessageBuilder? loadingMessageBuilder(String message) => message.isEmpty
+    ? null
+    : (context) =>
+        LoadingConfig.instance.loadingMessageWidgetBuilder(context, message);

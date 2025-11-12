@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:an_dialogs/an_dialogs.dart';
 import 'package:an_dialogs/pop_intercept.dart';
 import 'package:an_lifecycle_cancellable/an_lifecycle_cancellable.dart';
@@ -87,6 +89,28 @@ class HomePage extends StatelessWidget {
                 }
               },
               child: Text('showMessageLoading 3s'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final loading = lifecycle.makeLiveCancellable();
+                ValueNotifier<int> step = ValueNotifier(1);
+                lifecycle.showCustomLoading(
+                    cancellable: loading,
+                    messageBuilder: (context) {
+                      return ValueListenableBuilder(
+                          valueListenable: step,
+                          builder: (_, v, __) => Text('第${step.value}步'));
+                    });
+                late final Timer time;
+                time = Timer.periodic(Duration(seconds: 1), (timer) {
+                  step.value++;
+                  if (step.value >= 5) {
+                    time.cancel();
+                    loading.cancel();
+                  }
+                });
+              },
+              child: Text('showMessageLoading dynamic message'),
             ),
             TextButton(
               onPressed: () {

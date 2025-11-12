@@ -1,3 +1,4 @@
+import 'package:an_dialogs/src/loading.dart';
 import 'package:an_dialogs/src/tools.dart';
 import 'package:an_dialogs/src/tools/tools.dart';
 import 'package:an_lifecycle_cancellable/an_lifecycle_cancellable.dart';
@@ -8,7 +9,7 @@ import 'package:flutter/material.dart';
 final _loadingKey = Object();
 
 extension on Lifecycle {
-  void _showLoadingDialog(CancellableQueue<String> queue) {
+  void _showLoadingDialog(CancellableQueue<LoadingMessageBuilder?> queue) {
     launchWhenLifecycleStateResumed(
       cancellable: queue.managerCancellable,
       block: (c) async {
@@ -28,9 +29,9 @@ extension on Lifecycle {
 }
 
 extension LifecycleLoadingExt on ILifecycle {
-  /// 展示 loading
-  /// * [cancellable] 控制loading的结束
-  void showLoading({String message = '', required Cancellable cancellable}) {
+  void _show(
+      {LoadingMessageBuilder? messageBuilder,
+      required Cancellable cancellable}) {
     if (currentLifecycleState < LifecycleState.initialized) return;
     cancellable = makeLiveCancellable(other: cancellable);
     if (cancellable.isUnavailable) return;
@@ -41,17 +42,32 @@ extension LifecycleLoadingExt on ILifecycle {
     final loadingQueue = extData.getOrPut(
       key: _loadingKey,
       ifAbsent: (l) {
-        final queue = CancellableQueue<String>();
+        final queue = CancellableQueue<LoadingMessageBuilder?>();
         l.launchWhenLifecycleEventDestroy(block: (_) => queue.cancelAll());
         queue.onCancel.then(
-          (_) => extData.remove<CancellableQueue<String>>(key: _loadingKey),
+          (_) => extData.remove<CancellableQueue<LoadingMessageBuilder?>>(
+              key: _loadingKey),
         );
         l._showLoadingDialog(queue);
         return queue;
       },
     );
-    loadingQueue.add(message, cancellable);
+    loadingQueue.add(messageBuilder, cancellable);
   }
+
+  /// 展示 loading
+  /// * [cancellable] 控制loading的结束
+  void showLoading({String message = '', required Cancellable cancellable}) =>
+      _show(
+          cancellable: cancellable,
+          messageBuilder: loadingMessageBuilder(message));
+
+  /// 自定义 message 一般用来展示动态消息比如 进度
+  /// * [cancellable] 控制loading的结束
+  void showCustomLoading(
+          {required LoadingMessageBuilder messageBuilder,
+          required Cancellable cancellable}) =>
+      _show(cancellable: cancellable, messageBuilder: messageBuilder);
 }
 
 extension FutureLoadingExt<T> on Future<T> {

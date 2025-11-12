@@ -2,8 +2,13 @@ import 'package:an_dialogs/src/tools.dart';
 import 'package:an_lifecycle_cancellable/an_lifecycle_cancellable.dart';
 import 'package:flutter/material.dart';
 
-typedef LoadingDialogContentBuilder = Widget Function(
+typedef LoadingMessageBuilder = Widget Function(BuildContext context);
+
+typedef LoadingMessageWidgetBuilder = Widget Function(
     BuildContext context, String message);
+
+typedef LoadingDialogContentBuilder = Widget Function(
+    BuildContext context, LoadingMessageBuilder? messageBuilder);
 
 /// loading 配置
 class LoadingConfig {
@@ -31,6 +36,10 @@ class LoadingConfig {
     );
   };
 
+  ///
+  LoadingMessageWidgetBuilder loadingMessageWidgetBuilder =
+      (_, message) => Text(message);
+
   /// 定义如何构建loading的布局
   LoadingDialogContentBuilder loadingDialogContentBuilder =
       defaultLoadingDialogContentBuilder;
@@ -39,10 +48,10 @@ class LoadingConfig {
 /// 默认的loading dialog content
 Widget defaultLoadingDialogContentBuilder(
   BuildContext context,
-  String message,
+  LoadingMessageBuilder? messageBuilder,
 ) {
   Widget child;
-  if (message.isEmpty) {
+  if (messageBuilder == null) {
     child = SizedBox(
       width: 60,
       height: 60,
@@ -54,7 +63,7 @@ Widget defaultLoadingDialogContentBuilder(
       children: [
         const CircularProgressIndicator(),
         const SizedBox(height: 16),
-        Text(message),
+        Builder(builder: messageBuilder),
       ],
     );
   }
